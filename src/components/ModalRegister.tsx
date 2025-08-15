@@ -1,73 +1,87 @@
 import { useState } from "react";
+
 export default function ModalRegister() {
   const [fname, setFname] = useState("");
-  const [fnameError, setFnameError] = useState(false);
   const [lname, setLname] = useState("");
+  const [plan, setPlan] = useState("");
+  const [gender, setGender] = useState("");
+
   const [buyBottle, setBuyBottle] = useState(false);
   const [buyShoes, setBuyShoes] = useState(false);
   const [buyCap, setBuyCap] = useState(false);
-  // add more state variables:
-  const [plan, setPlan] = useState("");
-  const [gender, setGender] = useState("");
-  // ----------------------------------------------------------------
-  const inputFnameOnChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+
+  const [agree, setAgree] = useState(false);
+
+  // Error States
+  const [fnameError, setFnameError] = useState(false);
+  const [lnameError, setLnameError] = useState(false);
+  const [planError, setPlanError] = useState(false);
+  const [genderError, setGenderError] = useState(false);
+
+  const inputFnameOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFname(e.target.value);
     setFnameError(false);
-    setFname(event.target.value);
   };
 
-  const inputLnameOnChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setLname(event.target.value);
+  const inputLnameOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setLname(e.target.value);
+    setLnameError(false);
   };
 
-  const selectPlanOnChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setPlan(event.target.value);
+  const selectPlanOnChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setPlan(e.target.value);
+    setPlanError(false);
   };
 
   const radioGenderMaleOnChange = () => {
     setGender("male");
+    setGenderError(false);
   };
 
   const radioGenderFemaleOnChange = () => {
     setGender("female");
+    setGenderError(false);
   };
-
-  const cbBuyBottleOnChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setBuyBottle(event.target.checked);
-  };
-
-  const cbBuyShoesOnChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setBuyShoes(event.target.checked);
-  };
-
-  const cbBuyCapOnChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setBuyCap(event.target.checked);
-  };
-
-  // ----------------------------------------------------------------
 
   const computeTotalPayment = () => {
-    let total = 0;
-    if (plan === "funrun") total += 500;
-    if (plan === "mini") total += 800;
-    if (plan === "half") total += 1200;
-    if (plan === "full") total += 1500;
-    if (buyBottle) total += 200;
-    if (buyShoes) total += 600;
-    if (buyCap) total += 400;
+    let base = 0;
+    if (plan === "funrun") base = 500;
+    if (plan === "mini") base = 800;
+    if (plan === "half") base = 1200;
+    if (plan === "full") base = 1500;
 
-    return total;
+    let extras = 0;
+    if (buyBottle) extras += 200;
+    if (buyShoes) extras += 600;
+    if (buyCap) extras += 400;
+
+    const isDiscount = buyBottle && buyShoes && buyCap;
+    if (isDiscount) extras *= 0.8;
+
+    return base + extras;
   };
 
-  // ----------------------------------------------------------------
-
   const registerBtnOnClick = () => {
-    let fnameOk = true;
+    let isValid = true;
+
     if (fname === "") {
-      fnameOk = false;
       setFnameError(true);
+      isValid = false;
+    }
+    if (lname === "") {
+      setLnameError(true);
+      isValid = false;
+    }
+    if (plan === "") {
+      setPlanError(true);
+      isValid = false;
+    }
+    if (gender === "") {
+      setGenderError(true);
+      isValid = false;
     }
 
-    if (fnameOk) {
+    if (isValid) {
       alert(
         `Registration complete. Please pay money for ${computeTotalPayment().toLocaleString()} THB.`
       );
@@ -75,89 +89,57 @@ export default function ModalRegister() {
   };
 
   return (
-    <div
-      className="modal fade"
-      id="modalregister" //id="modalregister": ตัวระบุของ modal (ใช้กับ data-bs-target หน้า HomePage)
-      data-bs-backdrop="static"
-      data-bs-keyboard="false"
-      tabIndex={-1}
-      aria-labelledby="modalregisterLabel"
-      aria-hidden="true"
-    >
+    <div className="modal fade" id="modalregister" data-bs-backdrop="static" data-bs-keyboard="false" tabIndex={-1}>
       <div className="modal-dialog">
         <div className="modal-content">
           <div className="modal-header">
             <h5 className="modal-title">Register CMU Marathon 🏃‍♂️</h5>
-            <button
-              type="button"
-              className="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-            ></button>
+            <button type="button" className="btn-close" data-bs-dismiss="modal"></button>
           </div>
           <div className="modal-body">
-            {/* First name & Last name */}
+
+            {/* First & Last Name */}
             <div className="d-flex gap-2">
               <div>
                 <label className="form-label">First name</label>
                 <input
-                  className={"form-control" + (fnameError ? " is-invalid" : "")}
-                  onChange={inputFnameOnChange}
+                  className={`form-control ${fnameError ? "is-invalid" : ""}`}
                   value={fname}
+                  onChange={inputFnameOnChange}
                 />
-                <div className="invalid-feedback">Invalid last name</div>
+                {fnameError && <div className="invalid-feedback">Invalid last name</div>}
               </div>
               <div>
                 <label className="form-label">Last name</label>
                 <input
-                  className="form-control"
-                  onChange={inputLnameOnChange}
+                  className={`form-control ${lnameError ? "is-invalid" : ""}`}
                   value={lname}
+                  onChange={inputLnameOnChange}
                 />
-                <div className="invalid-feedback">Invalid last name</div>
+                {lnameError && <div className="invalid-feedback">Invalid last name</div>}
               </div>
             </div>
 
-            {/* Running Plan */}
+            {/* Plan */}
             <div className="mt-2">
               <label className="form-label">Plan</label>
-              <select
-                className="form-select"
-                onChange={selectPlanOnChange}
-                value={plan}
-              >
+              <select className={`form-select ${planError ? "is-invalid" : ""}`} value={plan} onChange={selectPlanOnChange}>
                 <option value="">Please select..</option>
                 <option value="funrun">Fun run 5.5 Km (500 THB)</option>
                 <option value="mini">Mini Marathon 10 Km (800 THB)</option>
                 <option value="half">Half Marathon 21 Km (1,200 THB)</option>
-                <option value="full">
-                  Full Marathon 42.195 Km (1,500 THB)
-                </option>
+                <option value="full">Full Marathon 42.195 Km (1,500 THB)</option>
               </select>
-              <div className="invalid-feedback">Please select a Plan</div>
+              {planError && <div className="invalid-feedback">Please select a Plan</div>}
             </div>
 
             {/* Gender */}
             <div className="mt-2">
               <label className="form-label">Gender</label>
               <div>
-                <input
-                  className="me-2 form-check-input"
-                  type="radio"
-                  onChange={radioGenderMaleOnChange}
-                  checked={gender === "male"}
-                />
-                Male 👨
-                <input
-                  className="mx-2 form-check-input"
-                  type="radio"
-                  onChange={radioGenderFemaleOnChange}
-                  checked={gender === "female"}
-                />
-                Female 👩
-                {/* To show error when user did not select gender, */}
-                {/* We just have to render the div below (Not using is-invalid bootstrap class) */}
-                {/* <div className="text-danger">Please select gender</div> */}
+                <input className="form-check-input me-2" type="radio" checked={gender === "male"} onChange={radioGenderMaleOnChange} />Male 👨
+                <input className="form-check-input mx-2" type="radio" checked={gender === "female"} onChange={radioGenderFemaleOnChange} />Female 👩
+                {genderError && <div className="text-danger">Please select gender</div>}
               </div>
             </div>
 
@@ -165,58 +147,38 @@ export default function ModalRegister() {
             <div className="mt-2">
               <label className="form-label">Extra Item(s)</label>
               <div>
-                <input
-                  className="me-2 form-check-input"
-                  type="checkbox"
-                  onChange={cbBuyBottleOnChange}
-                  checked={buyBottle}
-                />
-                <label className="form-check-label">Bottle 🍼 (200 THB)</label>
+                <input type="checkbox" className="form-check-input me-2" checked={buyBottle} onChange={(e) => setBuyBottle(e.target.checked)} />
+                Bottle 🍼 (200 THB)
               </div>
               <div>
-                <input
-                  className="me-2 form-check-input"
-                  type="checkbox"
-                  onChange={cbBuyShoesOnChange}
-                  checked={buyShoes}
-                />
-                <label className="form-check-label">Shoes 👟 (600 THB)</label>
+                <input type="checkbox" className="form-check-input me-2" checked={buyShoes} onChange={(e) => setBuyShoes(e.target.checked)} />
+                Shoes 👟 (600 THB)
               </div>
               <div>
-                <input
-                  className="me-2 form-check-input"
-                  type="checkbox"
-                  onChange={cbBuyCapOnChange}
-                  checked={buyCap}
-                />
-                <label className="form-check-label">Cap 🧢 (400 THB)</label>
+                <input type="checkbox" className="form-check-input me-2" checked={buyCap} onChange={(e) => setBuyCap(e.target.checked)} />
+                Cap 🧢 (400 THB)
               </div>
             </div>
-
-            <div className="alert alert-primary mt-3" role="alert">
+              <div>
+              {(buyBottle && buyShoes && buyCap) && (
+                <span className="text-success d-block">(20% Discounted)</span>
+              )}
+            </div>
+            <div className="alert alert-primary mt-3">
               Promotion📢 Buy all items to get 20% Discount
             </div>
-
             {/* Total Payment */}
             <div>
-              Total Payment : {computeTotalPayment().toLocaleString()} THB
-              {/* Render below element conditionally when user get 20% discount */}
-              {/* <span className="text-success d-block">(20% Discounted)</span> */}
-            </div>
+                Total Payment : {computeTotalPayment().toLocaleString()} THB
+              </div>
           </div>
+
           <div className="modal-footer">
-            {/* Terms and conditions */}
             <div>
-              <input className="me-2 form-check-input" type="checkbox" />I agree
-              to the terms and conditions
+              <input type="checkbox" className="form-check-input me-2" checked={agree} onChange={(e) => setAgree(e.target.checked)} />
+              I agree to the terms and conditions
             </div>
-            {/* Register Button */}
-            <button
-              className="btn btn-success my-2"
-              onClick={registerBtnOnClick}
-              //You can embbed a state like below to disabled the button
-              //disabled={isUserAgreed}
-            >
+            <button className="btn btn-success my-2" onClick={registerBtnOnClick} disabled={!agree}>
               Register
             </button>
           </div>
